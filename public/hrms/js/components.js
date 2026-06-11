@@ -347,11 +347,12 @@ const UI = (() => {
         <div class="form-group">
           <label class="form-label">Department</label>
           <select class="form-select" id="emp-dept">
-            <option value="">Select department</option>
-            ${['Engineering','Design','HR','Marketing','Sales','Finance'].map(d =>
+            <option value="">Select or type below</option>
+            ${[...new Set(['Engineering','Design','HR','Marketing','Sales','Finance', ...Store.getAll('employees').map(emp => emp.department).filter(Boolean)])].map(d =>
               `<option value="${d}" ${e.department === d ? 'selected' : ''}>${d}</option>`
             ).join('')}
           </select>
+          <input class="form-input" id="emp-dept-custom" placeholder="Or type a custom department" style="margin-top:var(--sp-2)" value="${e.department && !['Engineering','Design','HR','Marketing','Sales','Finance'].includes(e.department) ? e.department : ''}">
         </div>
         <div class="form-group">
           <label class="form-label">Role</label>

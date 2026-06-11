@@ -5,7 +5,7 @@
 const AttendanceModule = (() => {
   let currentTab = 'today';
   let currentPage = 1;
-  let filterDate = '2026-06-10';
+  let filterDate = new Date().toISOString().slice(0, 10);
   let filterEmployee = 'all';
   let clockedIn = false;
   let clockInTime = null;
@@ -47,22 +47,22 @@ const AttendanceModule = (() => {
         <div class="attendance-stat glass">
           <div class="att-value" style="color:var(--success-400)">${stats.present}</div>
           <div class="att-label">Present</div>
-          <div class="att-bar"><div class="att-bar-fill" style="width:${(stats.present/stats.total*100)}%;background:var(--success-500)"></div></div>
+          <div class="att-bar"><div class="att-bar-fill" style="width:${stats.total ? (stats.present/stats.total*100) : 0}%;background:var(--success-500)"></div></div>
         </div>
         <div class="attendance-stat glass">
           <div class="att-value" style="color:var(--danger-400)">${stats.absent}</div>
           <div class="att-label">Absent</div>
-          <div class="att-bar"><div class="att-bar-fill" style="width:${(stats.absent/stats.total*100)}%;background:var(--danger-500)"></div></div>
+          <div class="att-bar"><div class="att-bar-fill" style="width:${stats.total ? (stats.absent/stats.total*100) : 0}%;background:var(--danger-500)"></div></div>
         </div>
         <div class="attendance-stat glass">
           <div class="att-value" style="color:var(--warning-400)">${stats.late}</div>
           <div class="att-label">Late</div>
-          <div class="att-bar"><div class="att-bar-fill" style="width:${(stats.late/stats.total*100)}%;background:var(--warning-500)"></div></div>
+          <div class="att-bar"><div class="att-bar-fill" style="width:${stats.total ? (stats.late/stats.total*100) : 0}%;background:var(--warning-500)"></div></div>
         </div>
         <div class="attendance-stat glass">
-          <div class="att-value" style="color:var(--primary-400)">${Math.round(stats.present/stats.total*100)}%</div>
+          <div class="att-value" style="color:var(--primary-400)">${stats.total ? Math.round(stats.present/stats.total*100) : 0}%</div>
           <div class="att-label">Attendance Rate</div>
-          <div class="att-bar"><div class="att-bar-fill" style="width:${(stats.present/stats.total*100)}%;background:var(--primary-500)"></div></div>
+          <div class="att-bar"><div class="att-bar-fill" style="width:${stats.total ? (stats.present/stats.total*100) : 0}%;background:var(--primary-500)"></div></div>
         </div>
       </div>
 
@@ -100,7 +100,8 @@ const AttendanceModule = (() => {
   }
 
   function renderToday(container) {
-    const records = Store.getAll('attendance').filter(a => a.date === '2026-06-10');
+    const today = new Date().toISOString().slice(0, 10);
+    const records = Store.getAll('attendance').filter(a => a.date === today);
     const employees = Store.getAll('employees').filter(e => e.status === 'active');
 
     // Merge employees with their attendance

@@ -495,7 +495,7 @@ const AdminModule = (() => {
           <div class="admin-settings-rows">
             <div class="admin-setting-row">
               <span class="admin-setting-label">Application</span>
-              <span class="admin-setting-value">Antigravity HR</span>
+              <span class="admin-setting-value">ILIOS-HR</span>
             </div>
             <div class="admin-setting-row">
               <span class="admin-setting-label">Version</span>
@@ -732,9 +732,8 @@ const AdminModule = (() => {
       return;
     }
 
-    const jobs = Store.getAll('jobPostings');
-    const jobIdx = jobs.findIndex(j => j.id === jobId);
-    if (jobIdx === -1) {
+    const job = Store.getById('jobPostings', jobId);
+    if (!job) {
       UI.toast('Selected job not found', 'error');
       return;
     }
@@ -749,20 +748,17 @@ const AdminModule = (() => {
       source: payload.source || 'n8n Webhook Simulator'
     };
 
-    const data = JSON.parse(localStorage.getItem('antigravity_hr_v2'));
-    if (!data.jobPostings[jobIdx].candidates) {
-      data.jobPostings[jobIdx].candidates = [];
-    }
-    data.jobPostings[jobIdx].candidates.push(newCandidate);
-    localStorage.setItem('antigravity_hr_v2', JSON.stringify(data));
+    Store.update('jobPostings', jobId, {
+      candidates: [...(job.candidates || []), newCandidate]
+    });
 
     Store.logActivity('candidate_added', 'recruitment', {
       candidateName: newCandidate.name,
-      jobTitle: data.jobPostings[jobIdx].title,
+      jobTitle: job.title,
       source: newCandidate.source
     });
 
-    UI.toast(`Candidate "${newCandidate.name}" ingested successfully into ${data.jobPostings[jobIdx].title}!`, 'success');
+    UI.toast(`Candidate "${newCandidate.name}" ingested successfully into ${job.title}!`, 'success');
     renderTab();
   }
 

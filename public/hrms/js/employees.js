@@ -286,7 +286,7 @@ const EmployeesModule = (() => {
   function submitEmployee(existingId) {
     const name = document.getElementById('emp-name').value.trim();
     const email = document.getElementById('emp-email').value.trim();
-    const department = document.getElementById('emp-dept').value;
+    const department = (document.getElementById('emp-dept-custom') && document.getElementById('emp-dept-custom').value.trim()) || document.getElementById('emp-dept').value;
     const role = document.getElementById('emp-role').value.trim();
     const phone = document.getElementById('emp-phone').value.trim();
     const joinDate = document.getElementById('emp-join').value;

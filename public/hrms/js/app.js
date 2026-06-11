@@ -187,7 +187,7 @@ const App = (() => {
 
       const name = document.getElementById('signup-name').value.trim();
       const email = document.getElementById('signup-email').value.trim();
-      const department = document.getElementById('signup-dept').value;
+      const department = (document.getElementById('signup-dept-custom') && document.getElementById('signup-dept-custom').value.trim()) || document.getElementById('signup-dept').value;
       const role = document.getElementById('signup-role').value.trim() || 'Employee';
       const password = document.getElementById('signup-password').value;
       const confirm = document.getElementById('signup-confirm').value;
@@ -302,7 +302,19 @@ const App = (() => {
     });
   }
 
-  return { init, updateBadges, resetData, toggleTheme, switchAuthTab, updateAdminVisibility };
+  function logout() {
+    UI.confirm('Are you sure you want to sign out?', () => {
+      localStorage.removeItem(USER_KEY);
+      Store.logActivity('logout', 'auth', {});
+      document.body.classList.remove('is-admin');
+      const loginScreen = document.getElementById('login-screen');
+      loginScreen.style.display = '';
+      loginScreen.classList.remove('hiding');
+      UI.toast('Signed out successfully', 'info');
+    });
+  }
+
+  return { init, updateBadges, resetData, toggleTheme, switchAuthTab, updateAdminVisibility, logout };
 })();
 
 // Boot

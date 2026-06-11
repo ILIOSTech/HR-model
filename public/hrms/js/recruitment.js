@@ -218,9 +218,10 @@ const RecruitmentModule = (() => {
         <div class="form-group">
           <label class="form-label">Department</label>
           <select class="form-select" id="job-dept">
-            <option value="">Select</option>
-            ${['Engineering','Design','HR','Marketing','Sales','Finance'].map(d => `<option value="${d}">${d}</option>`).join('')}
+            <option value="">Select or type below</option>
+            ${[...new Set(['Engineering','Design','HR','Marketing','Sales','Finance', ...Store.getAll('employees').map(e => e.department).filter(Boolean)])].map(d => `<option value="${d}">${d}</option>`).join('')}
           </select>
+          <input class="form-input" id="job-dept-custom" placeholder="Or type a custom department" style="margin-top:var(--sp-2)">
         </div>
         <div class="form-group">
           <label class="form-label">Location</label>
@@ -273,7 +274,7 @@ const RecruitmentModule = (() => {
 
   function submitJob() {
     const title = document.getElementById('job-title').value.trim();
-    const department = document.getElementById('job-dept').value;
+    const department = document.getElementById('job-dept-custom').value.trim() || document.getElementById('job-dept').value;
     const location = document.getElementById('job-location').value.trim();
     const description = document.getElementById('job-desc').value.trim();
     const requirements = document.getElementById('job-reqs').value.trim().split('\n').filter(r => r.trim());
@@ -416,9 +417,11 @@ const RecruitmentModule = (() => {
 
     if (nextIdx >= stages.length) return;
 
-    const data = JSON.parse(localStorage.getItem('antigravity_hr_v2'));
-    data.jobPostings[jobIdx].candidates[candIdx].stage = stages[nextIdx];
-    localStorage.setItem('antigravity_hr_v2', JSON.stringify(data));
+    Store.update('jobPostings', jobId, {
+      candidates: jobs[jobIdx].candidates.map((c, i) => 
+        i === candIdx ? { ...c, stage: stages[nextIdx] } : c
+      )
+    });
 
     const candidateName = jobs[jobIdx].candidates[candIdx].name;
     Store.logActivity('candidate_status_changed', 'recruitment', { candidateName, stage: stages[nextIdx], jobTitle: jobs[jobIdx].title });
@@ -430,14 +433,18 @@ const RecruitmentModule = (() => {
 
   function rejectCandidate(jobId, candidateId) {
     UI.confirm('Are you sure you want to reject this candidate?', () => {
-      const data = JSON.parse(localStorage.getItem('antigravity_hr_v2'));
-      const jobIdx = data.jobPostings.findIndex(j => j.id === jobId);
-      const candIdx = data.jobPostings[jobIdx].candidates.findIndex(c => c.id === candidateId);
-      const candidateName = data.jobPostings[jobIdx].candidates[candIdx].name;
-      data.jobPostings[jobIdx].candidates[candIdx].stage = 'rejected';
-      localStorage.setItem('antigravity_hr_v2', JSON.stringify(data));
+      const job = Store.getById('jobPostings', jobId);
+      if (!job) return;
+      const candidate = job.candidates.find(c => c.id === candidateId);
+      if (!candidate) return;
+      const candidateName = candidate.name;
+      Store.update('jobPostings', jobId, {
+        candidates: job.candidates.map(c => 
+          c.id === candidateId ? { ...c, stage: 'rejected' } : c
+        )
+      });
 
-      Store.logActivity('candidate_status_changed', 'recruitment', { candidateName, stage: 'rejected', jobTitle: data.jobPostings[jobIdx].title });
+      Store.logActivity('candidate_status_changed', 'recruitment', { candidateName, stage: 'rejected', jobTitle: job.title });
 
       UI.closeModal();
       UI.toast('Candidate rejected', 'warning');

@@ -6,8 +6,8 @@ const LeaveModule = (() => {
   let currentTab = 'requests';
   let currentPage = 1;
   let filterStatus = 'all';
-  let calendarMonth = 5; // June (0-indexed)
-  let calendarYear = 2026;
+  let calendarMonth = new Date().getMonth();
+  let calendarYear = new Date().getFullYear();
 
   function render() {
     const main = document.getElementById('main-content');
